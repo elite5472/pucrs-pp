@@ -29,7 +29,7 @@ Last update: 18/08/2015
 	Parameters:
 	-c <cluster>		cluster name
 
-	Example: ladqview -c gates
+	Example: ladqview -c atlantica
 
 3. ladalloc
 
@@ -46,7 +46,7 @@ Last update: 18/08/2015
 	-t <time>		amount of time for allocation
 	[-s|-e]			shared or exclusive mode
 
-	Example: ladalloc -c gates -n 3 -t 15 -e
+	Example: ladalloc -c atlantica -n 3 -t 15 -s
 
 4. ladrun
 
@@ -61,7 +61,7 @@ Last update: 18/08/2015
 						(use if the selected machines has infiniband) - if not
 						specified, it uses both networks.
 
-	Example: ladrun -np 2 -net inband hello
+	Example: ladrun -np 16 hello
 
 5. ladinfo
 
