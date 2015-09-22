@@ -30,15 +30,10 @@ else{ //workers
     int state; MPI_Status s;
     MPI_Recv(&state,sizeof(int),MPI_INT,0,20,MPI_COMM_WORLD,&s);
 
-    //read here
-    Sleep(1000);
-
     //send to master : finish reading
     state=2;
     MPI_Send(&state, sizeof(int), MPI_INT, 0, 21, MPI_COMM_WORLD);
-
-    //processing
-    Sleep(3000);
+    
     fflush(stdout);printf("worker %d ended processing\n",rank);
 }
 
