@@ -1,3 +1,6 @@
+#inxlude "mpi.h"
+#include <stdio.h>
+
 int main(int argc, char* argv []){
 
 int rank,numprocess;
