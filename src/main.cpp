@@ -51,6 +51,7 @@ void master()
             //Send more work.
             i--;
             MPI_Send(&arrays[i], array_size, MPI_INT, status.MPI_SOURCE, TASK_CALL, MPI_COMM_WORLD);
+            process_index[status.MPI_SOURCE] = i
         }
     }
     double elapsed = MPI_Wtime() - start;
