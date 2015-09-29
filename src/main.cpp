@@ -53,7 +53,7 @@ void master()
         {
             //Send more work.
             i--;
-            cout << "Sending " << i << " to " << status.MPI_SOURCE << endl;
+            //cout << "Sending " << i << " to " << status.MPI_SOURCE << endl;
             MPI_Send(arrays[i], array_size, MPI_INT, status.MPI_SOURCE, TASK_CALL, MPI_COMM_WORLD);
             process_index[status.MPI_SOURCE] = i;
         }
