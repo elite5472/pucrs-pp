@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int compare_numbers(const void* x, const void* y{
+int compare_numbers(const void* x, const void* y){
 	return (*(int*)x - *(int*)y);
 }
 
