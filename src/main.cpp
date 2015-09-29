@@ -87,7 +87,9 @@ int main(int argc, char* argv [])
     
     int rank;
     array_count = atoi(argv[1]);
-    array_size = atoi(argv[2 ]);
+    array_size = atoi(argv[2]);
+    
+    cout << array_count << "/" << array_size << endl;
     
     arrays = new int*[array_count];
     for(int i = 0; i < array_count; i++)
