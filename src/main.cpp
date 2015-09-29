@@ -1,4 +1,4 @@
-//#include "mpi.h"
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,7 +86,7 @@ int main(int argc, char* argv [])
     
     int rank;
     array_count = atoi(argv[1]);
-    array_size = atoi(argv[2]);
+    array_size = atoi(argv[2 ]);
     
     arrays = new int*[array_count];
     for(int i = 0; i < array_count; i++)
