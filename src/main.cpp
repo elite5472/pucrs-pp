@@ -38,7 +38,7 @@ void master()
         MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, REQUEST_CALL, MPI_COMM_WORLD, &status);
         
         //Replace the array if we know where to put it (and we should)
-        if(status.MPI_SOURCE > 0 && process_index[status.MPI_SOURCE] != -1) memcpy(arrays[process_index[status.MPI_SOURCE]], result, 4*array_size);
+        //if(status.MPI_SOURCE > 0 && process_index[status.MPI_SOURCE] != -1) memcpy(arrays[process_index[status.MPI_SOURCE]], result, 4*array_size);
         
         if(i == 0)
         {
@@ -46,7 +46,6 @@ void master()
             int body = 0;
             MPI_Send(&body, 1, MPI_INT, status.MPI_SOURCE, RETURN_CALL, MPI_COMM_WORLD);
             done++;
-            cout << "Halting " << status.MPI_SOURCE << endl;
         }
         else
         {
@@ -54,7 +53,6 @@ void master()
             i--;
             MPI_Send(&arrays[i], array_size, MPI_INT, status.MPI_SOURCE, TASK_CALL, MPI_COMM_WORLD);
             process_index[status.MPI_SOURCE] = i;
-            cout << "Sending " << i <<  "to " << status.MPI_SOURCE << endl;
         }
     }
     double elapsed = MPI_Wtime() - start;
@@ -88,8 +86,6 @@ int main(int argc, char* argv [])
     int rank;
     array_count = atoi(argv[1]);
     array_size = atoi(argv[2]);
-    
-    cout << array_count << "/" << array_size << endl;
     
     arrays = new int*[array_count];
     for(int i = 0; i < array_count; i++)
