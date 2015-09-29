@@ -64,7 +64,7 @@ void master()
 
 void slave(int id)
 {
-    cout << "Process " << id " started." << endl;
+    cout << "Process " << id << " started." << endl;
     int* v = new int[array_size];
     MPI_Status status;
     
