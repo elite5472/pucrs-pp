@@ -71,11 +71,9 @@ void slave(int id)
         if(status.MPI_TAG == TASK_CALL)
         {
             qsort(v, array_size, 4, compare_numbers);
-            cout << id << ": Sorted an array!" << endl;
         }
         else
         {
-            cout << id << ": No more work. Halting." << endl;
             return;   
         }
     }
