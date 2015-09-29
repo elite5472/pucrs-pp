@@ -22,6 +22,7 @@ int compare_numbers(const void* x, const void* y){
 
 void master()
 {
+    cout << "Master process started." << endl;
     double start = MPI_Wtime();
     int i = array_count;
     int done = 0;
@@ -45,12 +46,14 @@ void master()
             //No more work, halt.
             int body = 0;
             MPI_Send(&body, 1, MPI_INT, status.MPI_SOURCE, RETURN_CALL, MPI_COMM_WORLD);
+            cout << "Halting " << status.MPI_SOURCE << endl;
             done++;
         }
         else
         {
             //Send more work.
             i--;
+            cout << "Sending " << i << " to " << status.MPI_SOURCE << endl;
             MPI_Send(arrays[i], array_size, MPI_INT, status.MPI_SOURCE, TASK_CALL, MPI_COMM_WORLD);
             process_index[status.MPI_SOURCE] = i;
         }
@@ -61,6 +64,7 @@ void master()
 
 void slave(int id)
 {
+    cout << "Process " << id " started." << endl;
     int* v = new int[array_size];
     MPI_Status status;
     
