@@ -39,7 +39,7 @@ void master()
         MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, REQUEST_CALL, MPI_COMM_WORLD, &status);
         
         //Replace the array if we know where to put it (and we should)
-        if(status.MPI_SOURCE > 0 && process_index[status.MPI_SOURCE] != -1) memcpy(arrays[process_index[status.MPI_SOURCE]], result, 4*array_size);
+        //if(status.MPI_SOURCE > 0 && process_index[status.MPI_SOURCE] != -1) memcpy(arrays[process_index[status.MPI_SOURCE]], result, 4*array_size);
         
         if(i == 0)
         {
