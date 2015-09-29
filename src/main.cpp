@@ -46,6 +46,7 @@ void master()
             int body = 0;
             MPI_Send(&body, 1, MPI_INT, status.MPI_SOURCE, RETURN_CALL, MPI_COMM_WORLD);
             done++;
+            cout << "Halting " << status.MPI_SOURCE << endl;
         }
         else
         {
@@ -53,6 +54,7 @@ void master()
             i--;
             MPI_Send(&arrays[i], array_size, MPI_INT, status.MPI_SOURCE, TASK_CALL, MPI_COMM_WORLD);
             process_index[status.MPI_SOURCE] = i;
+            cout << "Sending " << i <<  "to " << status.MPI_SOURCE << endl;
         }
     }
     double elapsed = MPI_Wtime() - start;
