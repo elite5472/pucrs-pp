@@ -104,4 +104,5 @@ int main(int argc, char* argv [])
     
     if(rank == 0) master();
     else slave(rank);
+    MPI_Barrier(MPI_COMM_WORLD);
 }
