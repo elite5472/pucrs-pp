@@ -55,7 +55,7 @@ void master()
         }
     }
     double elapsed = MPI_Wtime() - start;
-    cout << "Elapsed: " << elapsed
+    cout << "Elapsed: " << elapsed;
 }
 
 void slave(int id)
