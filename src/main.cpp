@@ -85,9 +85,8 @@ int main(int argc, char* argv [])
     MPI_Init(&argc, &argv);
     
     int rank;
-    processes = atoi(argv[1]);
-    array_count = atoi(argv[2]);
-    array_size = atoi(argv[3]);
+    array_count = atoi(argv[1]);
+    array_size = atoi(argv[2]);
     
     arrays = new int*[array_count];
     for(int i = 0; i < array_count; i++)
