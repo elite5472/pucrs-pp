@@ -66,7 +66,7 @@ void slave(int id)
     while(true)
     {
         MPI_Send(v, array_size, MPI_INT, 0, REQUEST_CALL, MPI_COMM_WORLD);
-        MPI_Recv(v, array_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, status);
+        MPI_Recv(v, array_size, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if(status.MPI_TAG == TASK_CALL)
         {
             qsort(v, array_size, 4, compare_numbers);
