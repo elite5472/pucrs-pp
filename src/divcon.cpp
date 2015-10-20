@@ -66,7 +66,7 @@ int *interleaving(int vetor[], int tam)
 void root(int id)
 {
 	size_vector = array_size;
-	//cout << "Root process started. " << endl;  
+	cout << "Root process started. " << array_size << " elements." << endl;  
 	int i;	
 	tag = 1; 
 	vetor = new int[array_size];
