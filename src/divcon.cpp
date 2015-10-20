@@ -101,11 +101,11 @@ void root(int id)
 	cout << "Root process interleaving. " << endl;
 	
 	//Ensure vector is sorted.
-	for(int i = 0; i < ARRAY_SIZE - 1; i++) if (vector[i] > vector[i+1])
+	for(int i = 0; i < ARRAY_SIZE - 1; i++) if (vetor[i] > vetor[i+1])
 	{
 		cout << "Array did not sort properly." << endl;
 	}
-	delete vector;
+	delete vetor;
 
 	double elapsed = MPI_Wtime() - start;
 	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
