@@ -69,10 +69,12 @@ void root(int id)
 	//cout << "Root process started. " << endl;  
 	int i;	
 	tag = 1; 
-	vetor = (int *)malloc(sizeof(int) * ARRAY_SIZE);
+	vetor = new int[ARRAY_SIZE];
 	for (i=0 ; i<ARRAY_SIZE; i++){              /* init array with worst case for sorting  (teacher)*/
 		vetor[i] = ARRAY_SIZE-i;
-	}	
+	}
+	
+	double start = MPI_Wtime();
 	
 	//cout << "Root process created array. " << endl;  	
 
@@ -109,12 +111,15 @@ void root(int id)
 		vetor = interleaving(vetor, size_vector);
 
 		cout << "Root process interleaving. " << endl;
-
-		for (i=0 ; i<ARRAY_SIZE; i++)
-		{	        
-		printf("%d, ",vetor[i]);				
+		
+		//Ensure vector is sorted.
+		for(int i = 0; i < ARRAY_SIZE - 1; i++) if (vector[i] > vector[i+1])
+		{
+			cout << "Array did not sort properly." << endl;
 		}
 
+		double elapsed = MPI_Wtime() - start;
+		cout << "Elapsed: " << setprecision(4) << elapsed << endl;
 	}
 }
 	
