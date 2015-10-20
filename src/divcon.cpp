@@ -183,6 +183,7 @@ void son(int id)
 int main(int argc, char* argv [])
 {	
 	MPI_Init(&argc, &argv);
+	array_size = atoi(argv[1]);
 	int rank;	
 
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
