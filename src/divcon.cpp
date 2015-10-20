@@ -84,43 +84,31 @@ void root(int id)
 	//MPI_Get_count(&status, MPI_INT, &size_vector);	 
 	
 	size_vector = ARRAY_SIZE;
+	
+	MPI_Send ( &vetor[0], size_vector/2, MPI_INT, SonLeft, tag, MPI_COMM_WORLD);  
+		MPI_Send ( &vetor[size_vector/2], size_vector/2,MPI_INT, SonRight, tag, MPI_COMM_WORLD);  
+	
+	//cout << "Root process send. "<< size_vector/2 << endl;		
 
-		
+	MPI_Recv ( &vetor[0],size_vector/2, MPI_INT, SonLeft, MPI_ANY_TAG, MPI_COMM_WORLD, &status);    
+		MPI_Recv ( &vetor[size_vector/2], size_vector/2, MPI_INT, SonRight, MPI_ANY_TAG, MPI_COMM_WORLD, &status);  
 
-	if(size_vector < DELTA ){ //if size of the vector less than five(can be any number) conquest
-		bs(size_vector, vetor); 	
-		//for (i=0 ; i<size_vector; i++)
-		//{	        
-		//printf("%d, ",vetor[i]);				
-		//}	
+	
+	//cout << "Root process rec. " << endl;
+	
+	vetor = interleaving(vetor, size_vector);
+
+	cout << "Root process interleaving. " << endl;
+	
+	//Ensure vector is sorted.
+	for(int i = 0; i < ARRAY_SIZE - 1; i++) if (vector[i] > vector[i+1])
+	{
+		cout << "Array did not sort properly." << endl;
 	}
-	else{//sends to the children and awaits the result, than "interleaving" and print
-		//cout << "Root process begin to send. " << endl; 
-		
-		MPI_Send ( &vetor[0], size_vector/2, MPI_INT, SonLeft, tag, MPI_COMM_WORLD);  
-        	MPI_Send ( &vetor[size_vector/2], size_vector/2,MPI_INT, SonRight, tag, MPI_COMM_WORLD);  
-		
-		//cout << "Root process send. "<< size_vector/2 << endl;		
+	delete vector;
 
-		MPI_Recv ( &vetor[0],size_vector/2, MPI_INT, SonLeft, MPI_ANY_TAG, MPI_COMM_WORLD, &status);    
-        	MPI_Recv ( &vetor[size_vector/2], size_vector/2, MPI_INT, SonRight, MPI_ANY_TAG, MPI_COMM_WORLD, &status);  
-
-		
-		//cout << "Root process rec. " << endl;
-		
-		vetor = interleaving(vetor, size_vector);
-
-		cout << "Root process interleaving. " << endl;
-		
-		//Ensure vector is sorted.
-		for(int i = 0; i < ARRAY_SIZE - 1; i++) if (vector[i] > vector[i+1])
-		{
-			cout << "Array did not sort properly." << endl;
-		}
-
-		double elapsed = MPI_Wtime() - start;
-		cout << "Elapsed: " << setprecision(4) << elapsed << endl;
-	}
+	double elapsed = MPI_Wtime() - start;
+	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
 }
 	
 void son(int id)
@@ -208,6 +196,6 @@ int main(int argc, char* argv [])
 	if(rank == 0) root(rank);
 	    else son(rank);
 
-
+	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
 }
