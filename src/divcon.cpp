@@ -7,13 +7,13 @@
 #include <iomanip>
 
 #define DELTA 30	
-#define ARRAY_SIZE 100000      // trabalho final com o valores 10.000, 100.000, 1.000.000
 using namespace std;
 
 
 int tag; /* Tag para as mensagens */
 MPI_Status status; /* Status de retorno */
 
+int array_size;
 int processes;
 int* vetor;
 int size_vector;
@@ -65,13 +65,13 @@ int *interleaving(int vetor[], int tam)
 //root of the tree	
 void root(int id)
 {
-	size_vector = ARRAY_SIZE;
+	size_vector = array_size;
 	//cout << "Root process started. " << endl;  
 	int i;	
 	tag = 1; 
-	vetor = new int[ARRAY_SIZE];
-	for (i=0 ; i<ARRAY_SIZE; i++){              /* init array with worst case for sorting  (teacher)*/
-		vetor[i] = ARRAY_SIZE-i;
+	vetor = new int[array_size];
+	for (i=0 ; i<array_size; i++){              /* init array with worst case for sorting  (teacher)*/
+		vetor[i] = array_size-i;
 	}
 	
 	double start = MPI_Wtime();
@@ -83,7 +83,7 @@ void root(int id)
 	
 	//MPI_Get_count(&status, MPI_INT, &size_vector);	 
 	
-	size_vector = ARRAY_SIZE;
+	size_vector = array_size;
 	
 	MPI_Send ( &vetor[0], size_vector/2, MPI_INT, SonLeft, tag, MPI_COMM_WORLD);  
 		MPI_Send ( &vetor[size_vector/2], size_vector/2,MPI_INT, SonRight, tag, MPI_COMM_WORLD);  
@@ -97,26 +97,21 @@ void root(int id)
 	//cout << "Root process rec. " << endl;
 	
 	vetor = interleaving(vetor, size_vector);
-
-	cout << "Root process interleaving. " << endl;
 	
 	//Ensure vector is sorted.
-	for(int i = 0; i < ARRAY_SIZE - 1; i++) if (vetor[i] > vetor[i+1])
+	for(int i = 0; i < array_size - 1; i++) if (vetor[i] > vetor[i+1])
 	{
 		cout << "Array did not sort properly." << endl;
 	}
 	delete vetor;
 
 	double elapsed = MPI_Wtime() - start;
-	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
+	cout << setprecision(4) << elapsed << endl;
 }
 	
 void son(int id)
 {
 	int i;
-	cout << "Son process started. " << id << endl;	
-	
-
 	
 	if(id%2 == 0){
 		father = (id-2)/2;		
@@ -134,8 +129,8 @@ void son(int id)
 	for(y = id; y > 0; y = (y-1)/2){
 		 l = l + 1;
 	}
-	size_vector = (ARRAY_SIZE/pow(2, l));
-	vetor = (int *)malloc(sizeof(int) * size_vector);	
+	size_vector = (array_size/pow(2, l));
+	vetor = new int[size_vector];	
 	
 	if(id %2 == 0){
 		MPI_Recv(&vetor[0], size_vector, MPI_INT, father, MPI_ANY_TAG, MPI_COMM_WORLD, &status);			
@@ -182,7 +177,7 @@ void son(int id)
 
 		MPI_Send (&vetor[0], size_vector, MPI_INT, father, tag, MPI_COMM_WORLD);   
 	}
-	
+	delete vetor;
 }
 	
 int main(int argc, char* argv [])
