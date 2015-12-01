@@ -171,6 +171,7 @@ void slave(int rank, int workers, int array_size)
 			}
 			if(work_item_id != -1)
 			{
+				cout << "Sorting..." << endl;
 				bs(array_size, work_item);
 				#pragma omp critical(put_item)
 				{
@@ -181,11 +182,15 @@ void slave(int rank, int workers, int array_size)
 		}
 	}
 	
+	cout << "All sorted." << endl;
+	
 	for(int i = 0; i < out_arrays.size(); i++)
 	{
+		cout << "Sending..." << endl;
 		MPI_Send(out_arrays.back(), array_size, MPI_INT, 0, out_ids.back(), MPI_COMM_WORLD);
 		out_arrays.pop_back();
 		out_ids.pop_back();
+		cout << "Sent" << endl;
 	}
 }
 
