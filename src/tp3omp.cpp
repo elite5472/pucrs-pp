@@ -74,7 +74,7 @@ void master(int id, int process_count, int array_size, int bag_size)
 
 	//All done.
 	double elapsed = MPI_Wtime() - start;
-    cout << "Elapsed: " << setprecision(4) << elapsed << endl;
+    	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
 
 	cout << "Cleaning up..." << endl;
 	for(int i = 0; i < bag_size; i++)
@@ -94,7 +94,8 @@ void slave(int rank, int workers, int array_size)
 	vector<int>out_ids;
 	int receiver = -1;
 	bool distributed = false;
-
+	double start = MPI_Wtime();
+	
 	#pragma omp parallel num_threads(workers)
 	{
 		int this_thread = omp_get_thread_num();
@@ -171,6 +172,8 @@ void slave(int rank, int workers, int array_size)
 	{
 		MPI_Send(out_arrays.at(i), array_size, MPI_INT, 0, out_ids.at(i), MPI_COMM_WORLD);
 	}
+	
+	cout << "Slave Elapsed: " << setprecision(4) << elapsed << endl;
 }
 
 int main(int argc, char* argv [])
