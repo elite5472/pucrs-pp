@@ -203,6 +203,13 @@ void slave(int rank, int workers, int array_size)
 			}
 		}
 		
+for(int x = 0; x < chunk_size; x++)
+{
+for(int y = 0; y < array_size; y++) cout << output[x][y] << " ";
+cout << endl;	
+}
+		cout << "Here" << endl;
+		
 		//Sent the chunk of sorted arrays to master.
 		MPI_Send(&(output[0][0]), array_size*chunk_size, MPI_INT, 0, chunks.at(i), MPI_COMM_WORLD);
 	}
