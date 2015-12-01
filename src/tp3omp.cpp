@@ -114,7 +114,7 @@ void slave(int rank, int workers, int array_size)
 
 		//Receiver thread will fetch all jobs while other threads work on them.		
 		done = false;
-		boolean timed = false;
+		bool timed = false;
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
