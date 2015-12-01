@@ -137,12 +137,12 @@ void slave(int rank, int workers, int array_size)
 				else
 				{
 					//Save al the arrays in a queue for workers to grab from one by one, keeping
-					//index information to rebuild the sorted bidimensional array as the output.
+					//index information to rebuild the sorted bidimensional array as the output.]
+					chunks.push_back(status.MPI_TAG);
 					for(int i = 0; i < chunk_size; i++)
 					{
 						arrays.push_back(result[i]);
 						ids.push_back(status.MPI_TAG + i);
-						chunks.push_back(status.MPI_TAG);
 					}
 				}
 			}
