@@ -172,8 +172,11 @@ void slave(int rank, int workers, int array_size)
 			if(work_item_id != -1)
 			{
 				bs(array_size, work_item);
-				out_arrays.push_back(work_item);
-				out_ids.push_back(work_item_id);
+				#pragma omp critical(put_item)
+				{
+					out_arrays.push_back(work_item);
+					out_ids.push_back(work_item_id);
+				}
 			}
 		}
 	}
