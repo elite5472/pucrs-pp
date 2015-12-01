@@ -28,8 +28,8 @@ int compare_numbers(const void* x, const void* y){
 void master(int id, int process_count, int array_size, int bag_size)
 {
 	cout << "Master: Process started.\n";
-	int** input = alloc_2d_int(int bagsize, int array_size);
-	int** output = alloc_2d_int(int bagsize, int array_size);
+	int** input = alloc_2d_int(bagsize, array_size);
+	int** output = alloc_2d_int(bagsize, array_size);
 	int sent = 0;
 	int processed =  0;
 	MPI_Status status;
@@ -123,7 +123,7 @@ void slave(int rank, int workers, int array_size)
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
-			int** result = alloc_2d_int(int 1000, int array_size);
+			int** result = alloc_2d_int(1000, array_size);
 			MPI_Recv(result, array_size*1000, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			if(!timed)
 			{
