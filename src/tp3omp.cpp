@@ -203,6 +203,6 @@ int main(int argc, char* argv [])
     
     if(rank == 0) master(0, processes, array_size, bag_size);
     else slave(rank, workers, array_size);
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Finalize();
 	return 0;
 }
