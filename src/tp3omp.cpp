@@ -107,6 +107,7 @@ void slave(int rank, int workers, int array_size)
 		{
 			if(receiver == -1)
 			{
+				cout << num_threads;
 				receiver = this_thread;
 			}
 		}
