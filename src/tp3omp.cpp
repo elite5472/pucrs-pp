@@ -184,10 +184,8 @@ void slave(int rank, int workers, int array_size)
 	
 	for(int i = 0; i < out_arrays.size(); i++)
 	{
-		cout << rank  << " sending " << out_ids.back() << endl;
-		MPI_Send(out_arrays.back(), array_size, MPI_INT, 0, out_ids.back(), MPI_COMM_WORLD);
-		out_arrays.pop_back();
-		out_ids.pop_back();
+		cout << rank  << " sending " << out_ids.at(i) << endl;
+		MPI_Send(out_arrays.at(i), array_size, MPI_INT, 0, out_ids.at(i), MPI_COMM_WORLD);
 	}
 }
 
