@@ -35,12 +35,14 @@ void master(int id, int process_count, int array_size, int bag_size)
 	MPI_Status status;
 
 	//Create worst case bubble sort:
-	for (int i = 0; i < bag_size; i++) 
+	for (int i = 0; i < bag_size; i++) for (int j = 0; j < array_size; j++)
 	{
-		for (int j = 0; j < array_size; j++)
-		{
-			input[i][j] = array_size - j;
-		}
+		input[i][j] = array_size - j;
+	}
+	
+	for (int i = 0; i < bag_size; i++) for (int j = 0; j < array_size; j++)
+	{
+		cout << input[i][j] << endl;
 	}
 
 	//Start the clock
@@ -50,8 +52,8 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			MPI_Send(&(input[0][0]) + sent, array_size * 1000, MPI_INT, i, sent, MPI_COMM_WORLD);
-			sent = sent + 1000;
+			MPI_Send(&(input[0][0]) + sent, array_size * 5, MPI_INT, i, sent, MPI_COMM_WORLD);
+			sent = sent + 5;
 		}
 	}
 	for(int i = 0; i < process_count; i++) if (i != id)
@@ -123,9 +125,9 @@ void slave(int rank, int workers, int array_size)
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
-			int** result = alloc_2d_int(1000, array_size);
-			MPI_Recv(&(result[0][0]), array_size*1000, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			for(int i = 0; i < 1000; i++) for(int j = 0; j < array_size; j++) cout << result[i][j] << endl;
+			int** result = alloc_2d_int(5, array_size);
+			MPI_Recv(&(result[0][0]), array_size*5, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			for(int i = 0; i < 5; i++) for(int j = 0; j < array_size; j++) cout << result[i][j] << endl;
 			if(!timed)
 			{
 				timed = true;
