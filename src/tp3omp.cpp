@@ -8,11 +8,11 @@
 #include <vector>
 
 using namespace std;
+
 const bool debug = true;
 const int DONE_CALL = 100000000;
 
-int compare_numbers(const void* x, const void* y)
-{
+int compare_numbers(const void* x, const void* y){
 	return (*(int*)x - *(int*)y);
 }
 
@@ -22,11 +22,11 @@ void master(int id, int process_count, int array_size, int bag_size)
 	int** input = new int*[bag_size];
 	int** output = new int*[bag_size];
 	int sent = 0;
-	int processed = 0;
+	int processed =  0;
 	MPI_Status status;
-	
+
 	//Create worst case bubble sort:
-	for (int i = 0; i < bag_size; i++)
+	for (int i = 0; i < bag_size; i++) 
 	{
 		input[i] = new int[array_size];
 		for (int j = 0; j < array_size; j++)
@@ -34,7 +34,7 @@ void master(int id, int process_count, int array_size, int bag_size)
 			input[i][j] = array_size - j;
 		}
 	}
-	
+
 	//Start the clock
 	double start = MPI_Wtime();
 	
@@ -42,20 +42,19 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-		MPI_Bsend(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
-		sent++;
+			//Send the array with its identifier id as tag.
+			MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
+			sent++;
 		}
 	}
-	
 	for(int i = 0; i < process_count; i++) if (i != id)
 	{
 		int body = 0;
 		//Send a done message to the process to stop listening for more jobs.
-		MPI_Send(&body, 1, MPI_INT, i, DONE_CALL, MPI_COMM_WORLD);
+        MPI_Send(&body, 1, MPI_INT, i, DONE_CALL, MPI_COMM_WORLD);
 	}
-	
 	cout << "All jobs sent." << endl;
-	
+
 	while(processed < bag_size)
 	{
 		int result[array_size];
@@ -72,11 +71,11 @@ void master(int id, int process_count, int array_size, int bag_size)
 		}
 	}
 	cout << "All jobs complete." << endl;
-	
+
 	//All done.
 	double elapsed = MPI_Wtime() - start;
-	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
-	
+    	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
+
 	cout << "Cleaning up..." << endl;
 	for(int i = 0; i < bag_size; i++)
 	{
@@ -102,6 +101,7 @@ void slave(int rank, int workers, int array_size)
 		int this_thread = omp_get_thread_num();
 		int num_threads = omp_get_num_threads();
 		bool done;
+		
 		//Choose which thread will be the receiver.
 		#pragma omp critical(chose_receiver)
 		{
@@ -110,8 +110,9 @@ void slave(int rank, int workers, int array_size)
 				receiver = this_thread;
 			}
 		}
-		
-		//Receiver thread will fetch all jobs while other threads work on them.
+
+
+		//Receiver thread will fetch all jobs while other threads work on them.		
 		done = false;
 		if(this_thread == receiver) while(!done)
 		{
@@ -132,8 +133,8 @@ void slave(int rank, int workers, int array_size)
 					ids.push_back(status.MPI_TAG);
 				}
 			}
-		} //Once the done call is sent, receiver becomes a worker.
-		
+		}	//Once the done call is sent, receiver becomes a worker.
+
 		done = false;
 		int* work_item;
 		int work_item_id = -1;
@@ -145,6 +146,7 @@ void slave(int rank, int workers, int array_size)
 				{
 					work_item = arrays.back();
 					arrays.pop_back();
+
 					work_item_id = ids.back();
 					ids.pop_back();
 				}
@@ -152,6 +154,7 @@ void slave(int rank, int workers, int array_size)
 				{
 					work_item_id = -1;
 				}
+
 				if(distributed && arrays.size() == 0) done = true;
 			}
 			if(work_item_id != -1)
@@ -159,34 +162,36 @@ void slave(int rank, int workers, int array_size)
 				qsort(work_item, array_size, 4, compare_numbers);
 				#pragma omp critical(put_item)
 				{
-				out_arrays.push_back(work_item);
-				out_ids.push_back(work_item_id);
+					out_arrays.push_back(work_item);
+					out_ids.push_back(work_item_id);
 				}
 			}
 		}
 	}
+	
 	double elapsed = MPI_Wtime() - start;
 	cout << "Slave Elapsed: " << setprecision(4) << elapsed << endl;
+	
 	for(int i = 0; i < out_arrays.size(); i++)
 	{
 		MPI_Send(out_arrays.at(i), array_size, MPI_INT, 0, out_ids.at(i), MPI_COMM_WORLD);
 	}
 }
+
 int main(int argc, char* argv [])
 {
 	MPI_Init(&argc, &argv);
-	int rank;
+    int rank;
 	int processes;
 	int workers = atoi(argv[1]);
-	int bag_size = atoi(argv[2]);
-	int array_size = atoi(argv[3]);
-	
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int bag_size = atoi(argv[2]);
+    int array_size = atoi(argv[3]);    
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &processes);
-	
-	if(rank == 0) master(0, processes, array_size, bag_size);
-	else slave(rank, workers, array_size);
-	
-	MPI_Finalize();
+    
+    if(rank == 0) master(0, processes, array_size, bag_size);
+    else slave(rank, workers, array_size);
+    MPI_Finalize();
 	return 0;
 }
