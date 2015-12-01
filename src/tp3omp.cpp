@@ -190,13 +190,13 @@ void slave(int rank, int workers, int array_size)
 	{
 		int** output = alloc_2d_int(chunk_size, array_size);
 		//Search for the sorted arrays that are part of this chunk.
-		for(j = 0; j < out_arrays.size(); j++)
+		for(int j = 0; j < out_arrays.size(); j++)
 		{
 			int rel_position = out_ids.at(j) - chunks.at(i)
 			if (rel_position > 0 && rel_position < 1000)
 			{
 				//Copy the array into the prepared memory structure.
-				for(k = 0; k < array_size; k++)
+				for(int k = 0; k < array_size; k++)
 				{
 					output[rel_position][k] = out_arrays.at(j)[k];
 				}
