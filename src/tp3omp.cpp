@@ -188,6 +188,7 @@ void slave(int rank, int workers, int array_size)
 
 int main(int argc, char* argv [])
 {
+	MPI_Init(&argc, &argv);
     int rank;
 	int processes;
 	int workers = atoi(argv[1]);
