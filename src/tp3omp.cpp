@@ -52,51 +52,39 @@ void master(int id, int process_count, int array_size, int bag_size)
 	//Start the clock
 	double start = MPI_Wtime();
 	
-	#pragma omp parallel sections
+	while(sent < bag_size)
 	{
-		//Sender
-		#pragma omp section
+		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			while(sent < bag_size)
-			{
-				for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
-				{
-					//Send the array with its identifier id as tag.
-					MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
-					sent++;
-				}
-			}
-			for(int i = 0; i < process_count; i++) if (i != id)
-			{
-				int body = 0;
-				//Send a done message to the process to stop listening for more jobs.
-		        MPI_Send(&body, 1, MPI_INT, i, DONE_CALL, MPI_COMM_WORLD);
-			}
-			cout << "All jobs sent." << endl;
-
-		}
-
-		//Receiver
-		#pragma omp section
-		{
-			while(processed < bag_size)
-			{
-				int result[array_size];
-				//Get processed jobs from slaves.
-				MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-				if(status.MPI_TAG >= 0 && status.MPI_TAG < bag_size)
-				{
-					output[status.MPI_TAG] = new int[array_size];
-					processed++;
-					for(int i = 0; i < array_size; i++)
-					{
-						output[status.MPI_TAG][i] = result[i];
-					}
-				}
-			}
-			cout << "All jobs complete." << endl;
+			//Send the array with its identifier id as tag.
+			MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
+			sent++;
 		}
 	}
+	for(int i = 0; i < process_count; i++) if (i != id)
+	{
+		int body = 0;
+		//Send a done message to the process to stop listening for more jobs.
+        MPI_Send(&body, 1, MPI_INT, i, DONE_CALL, MPI_COMM_WORLD);
+	}
+	cout << "All jobs sent." << endl;
+
+	while(processed < bag_size)
+	{
+		int result[array_size];
+		//Get processed jobs from slaves.
+		MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+		if(status.MPI_TAG >= 0 && status.MPI_TAG < bag_size)
+		{
+			output[status.MPI_TAG] = new int[array_size];
+			processed++;
+			for(int i = 0; i < array_size; i++)
+			{
+				output[status.MPI_TAG][i] = result[i];
+			}
+		}
+	}
+	cout << "All jobs complete." << endl;
 
 	//All done.
 	double elapsed = MPI_Wtime() - start;
@@ -116,6 +104,8 @@ void slave(int rank, int workers, int array_size)
 {
 	vector<int*>arrays;
 	vector<int>ids;
+	vector<int*>out_arrays;
+	vector<int>out_ids;
 	int receiver = -1;
 	bool distributed = false;
 
@@ -182,22 +172,22 @@ void slave(int rank, int workers, int array_size)
 			if(work_item_id != -1)
 			{
 				bs(array_size, work_item);
-				MPI_Send(work_item, array_size, MPI_INT, 0, work_item_id, MPI_COMM_WORLD);
+				out_arrays.push_back(work_item);
+				out_ids.push_back(work_item_id);
 			}
-		}		
+		}
+	}
+	
+	for(int i = 0; i < out_arrays.size(); i++)
+	{
+		MPI_Send(out_arrays.back(), array_size, MPI_INT, 0, out_ids.back(), MPI_COMM_WORLD);
+		out_arrays.pop_back();
+		out_ids.pop_back();
 	}
 }
 
 int main(int argc, char* argv [])
 {
-	int provided;
-	MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-	if (provided < MPI_THREAD_MULTIPLE)
-	{
-		printf("ERROR: The MPI library does not have full thread support\n");
-		MPI_Abort(MPI_COMM_WORLD, 1);
-	}
-    
     int rank;
 	int processes;
 	int workers = atoi(argv[1]);
