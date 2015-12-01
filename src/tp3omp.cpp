@@ -39,11 +39,6 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		input[i][j] = array_size - j;
 	}
-	
-	for (int i = 0; i < bag_size; i++) for (int j = 0; j < array_size; j++)
-	{
-		cout << input[i][j] << endl;
-	}
 
 	//Start the clock
 	double start = MPI_Wtime();
