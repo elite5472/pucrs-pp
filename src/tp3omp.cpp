@@ -10,7 +10,7 @@
 using namespace std;
 
 const bool debug = true;
-const int chunk_size = 10;
+const int chunk_size = 5;
 const int DONE_CALL = 100000000;
 
 int **alloc_2d_int(int rows, int cols) {
@@ -193,7 +193,7 @@ void slave(int rank, int workers, int array_size)
 		for(int j = 0; j < out_arrays.size(); j++)
 		{
 			int rel_position = out_ids.at(j) - chunks.at(i);
-			if (rel_position > 0 && rel_position < chunk_size)
+			if (rel_position >= 0 && rel_position < chunk_size)
 			{
 				//Copy the array into the prepared memory structure.
 				for(int k = 0; k < array_size; k++)
