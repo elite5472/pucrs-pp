@@ -186,7 +186,7 @@ void slave(int rank, int workers, int array_size)
 	cout << "Slave Elapsed: " << setprecision(4) << elapsed << endl;
 
 	//Prepare the output bidimensional array. Each chunk is an MPI sent call.
-	for(int i = 0; i < chunks; i++)
+	for(int i = 0; i < chunks.size(); i++)
 	{
 		int** output = alloc_2d_int(chunk_size, array_size);
 		//Search for the sorted arrays that are part of this chunk.
