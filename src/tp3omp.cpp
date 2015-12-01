@@ -122,7 +122,7 @@ void slave(int rank, int workers, int array_size)
 			MPI_Status status;
 			int** result = alloc_2d_int(5, array_size);
 			MPI_Recv(&(result[0][0]), array_size*5, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-			for(int i = 0; i < 5; i++) for(int j = 0; j < array_size; j++) cout << result[i][j] << endl;
+			for(int i = 0; i < 5; i++) for(int j = 0; j < array_size; j++) cout << "hello" << result[i][j] << endl;
 			if(!timed)
 			{
 				timed = true;
