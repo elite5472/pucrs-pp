@@ -67,7 +67,7 @@ void master(int id, int process_count, int array_size, int bag_size)
 		MPI_Recv(&(result[0][0]), array_size*chunk_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		if(status.MPI_TAG >= 0 && status.MPI_TAG < bag_size)
 		{
-			processed++;
+			processed =  processed + chunk_size;
 			for(int i = 0; i < chunk_size; i++) for(int j = 0; j < array_size; j++)
 			{
 				output[i + status.MPI_TAG][j] = result[i][j];
