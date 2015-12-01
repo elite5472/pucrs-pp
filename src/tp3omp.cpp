@@ -193,7 +193,7 @@ void slave(int rank, int workers, int array_size)
 		for(int j = 0; j < out_arrays.size(); j++)
 		{
 			int rel_position = out_ids.at(j) - chunks.at(i);
-			if (rel_position > 0 && rel_position < 1000)
+			if (rel_position > 0 && rel_position < chunk_size)
 			{
 				//Copy the array into the prepared memory structure.
 				for(int k = 0; k < array_size; k++)
