@@ -42,8 +42,8 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			MPI_Bsend(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
-			sent++;
+			MPI_Bsend(input + sent, array_size * 1000, MPI_INT, i, sent, MPI_COMM_WORLD);
+			sent = sent + 1000;
 		}
 	}
 	for(int i = 0; i < process_count; i++) if (i != id)
@@ -89,6 +89,7 @@ void slave(int rank, int workers, int array_size)
 {
 	vector<int*>arrays;
 	vector<int>ids;
+	vector<int>chunks;
 	vector<int*>out_arrays;
 	vector<int>out_ids;
 	int receiver = -1;
@@ -113,11 +114,17 @@ void slave(int rank, int workers, int array_size)
 
 		//Receiver thread will fetch all jobs while other threads work on them.		
 		done = false;
+		boolean timed = false;
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
-			int* result = new int[array_size];
-			MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			int** result = new int[1000][array_size];
+			MPI_Recv(result, array_size*1000, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			if(!timed)
+			{
+				timed = true;
+				start = MPI_Wtime();
+			}
 			#pragma omp critical(grab_item)
 			{
 				if(status.MPI_TAG == DONE_CALL)
@@ -127,9 +134,12 @@ void slave(int rank, int workers, int array_size)
 				}
 				else
 				{
-					start = MPI_Wtime();
-					arrays.push_back(result);
-					ids.push_back(status.MPI_TAG);
+					for(int i = 0; i < 1000; i++)
+					{
+						arrays.push_back(result[i]);
+						ids.push_back(status.MPI_TAG + i);
+						chunks.push_back(status.MPI_TAG);
+					}
 				}
 			}
 		}	//Once the done call is sent, receiver becomes a worker.
