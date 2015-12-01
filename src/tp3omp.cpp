@@ -10,7 +10,7 @@
 using namespace std;
 
 const bool debug = true;
-const int chunk_size = 5;
+const int chunk_size = 100;
 const int DONE_CALL = 100000000;
 
 int **alloc_2d_int(int rows, int cols) {
@@ -79,12 +79,6 @@ void master(int id, int process_count, int array_size, int bag_size)
 	//All done.
 	double elapsed = MPI_Wtime() - start;
     	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
-    	
-    for(int i = 0; i < bag_size; i++)
-	{
-		for(int j = 0; j < array_size; j++) cout << output[i][j] << " ";
-		cout << endl;	
-	}
 }
 
 void slave(int rank, int workers, int array_size)
@@ -202,14 +196,6 @@ void slave(int rank, int workers, int array_size)
 				}
 			}
 		}
-		
-for(int x = 0; x < chunk_size; x++)
-{
-for(int y = 0; y < array_size; y++) cout << output[x][y] << " ";
-cout << endl;	
-}
-		cout << "Here" << endl;
-		
 		//Sent the chunk of sorted arrays to master.
 		MPI_Send(&(output[0][0]), array_size*chunk_size, MPI_INT, 0, chunks.at(i), MPI_COMM_WORLD);
 	}
