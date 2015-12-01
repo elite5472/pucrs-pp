@@ -47,7 +47,7 @@ void master(int id, int process_count, int array_size, int bag_size)
 			MPI_Buffer_attach(buffer, buffsize); 
 			for(int j = 0; j < 1000; j++, sent++)
 			{
-				MPI_BSend(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
+				MPI_Bsend(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
 			}
 			MPI_Buffer_detach(&buffer, &buffsize); 
 		}
