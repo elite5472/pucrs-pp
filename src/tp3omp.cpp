@@ -173,6 +173,7 @@ void slave(int rank, int workers, int array_size)
 		MPI_Send(out_arrays.at(i), array_size, MPI_INT, 0, out_ids.at(i), MPI_COMM_WORLD);
 	}
 	
+	double elapsed = MPI_Wtime() - start;
 	cout << "Slave Elapsed: " << setprecision(4) << elapsed << endl;
 }
 
