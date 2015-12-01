@@ -28,8 +28,8 @@ int compare_numbers(const void* x, const void* y){
 void master(int id, int process_count, int array_size, int bag_size)
 {
 	cout << "Master: Process started.\n";
-	int** input = alloc_2d_int(bagsize, array_size);
-	int** output = alloc_2d_int(bagsize, array_size);
+	int** input = alloc_2d_int(bag_size, array_size);
+	int** output = alloc_2d_int(bag_size, array_size);
 	int sent = 0;
 	int processed =  0;
 	MPI_Status status;
