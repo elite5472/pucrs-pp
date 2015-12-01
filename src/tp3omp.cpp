@@ -192,7 +192,7 @@ void slave(int rank, int workers, int array_size)
 		//Search for the sorted arrays that are part of this chunk.
 		for(int j = 0; j < out_arrays.size(); j++)
 		{
-			int rel_position = out_ids.at(j) - chunks.at(i)
+			int rel_position = out_ids.at(j) - chunks.at(i);
 			if (rel_position > 0 && rel_position < 1000)
 			{
 				//Copy the array into the prepared memory structure.
