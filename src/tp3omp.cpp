@@ -56,7 +56,6 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			cout << "Master: senting " << sent << " to " << i << endl;
 			//Send the array with its identifier id as tag.
 			MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
 			sent++;
@@ -173,6 +172,7 @@ void slave(int rank, int workers, int array_size)
 			if(work_item_id != -1)
 			{
 				bs(array_size, work_item);
+				cout << "Slave " << rank << ": " << work_item_id << " sorted." << endl;
 				#pragma omp critical(put_item)
 				{
 					out_arrays.push_back(work_item);
