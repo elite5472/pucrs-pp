@@ -19,6 +19,8 @@ int compare_numbers(const void* x, const void* y){
 void master(int id, int process_count, int array_size, int bag_size)
 {
 	cout << "Master: Process started.\n";
+	int buffsize = 1024*1024;
+	char* buffer = new char[buffsize];
 	int** input = new int*[bag_size];
 	int** output = new int*[bag_size];
 	int sent = 0;
@@ -42,9 +44,12 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			//Send the array with its identifier id as tag.
-			MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
-			sent++;
+			MPI_Buffer_attach(buffer, buffsize); 
+			for(int j = 0; j < 1000; j++, sent++)
+			{
+				MPI_BSend(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
+			}
+			MPI_Buffer_detach(&buffer, &buffsize); 
 		}
 	}
 	for(int i = 0; i < process_count; i++) if (i != id)
