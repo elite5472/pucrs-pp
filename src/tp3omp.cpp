@@ -100,6 +100,7 @@ void slave(int rank, int workers, int array_size)
 	{
 		int this_thread = omp_get_thread_num();
 		int num_threads = omp_get_num_threads();
+		cout << this_thread << endl;
 		bool done;
 		
 		//Choose which thread will be the receiver.
@@ -107,7 +108,6 @@ void slave(int rank, int workers, int array_size)
 		{
 			if(receiver == -1)
 			{
-				cout << num_threads;
 				receiver = this_thread;
 			}
 		}
