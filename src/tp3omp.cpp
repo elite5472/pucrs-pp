@@ -12,6 +12,15 @@ using namespace std;
 const bool debug = true;
 const int DONE_CALL = 100000000;
 
+int **alloc_2d_int(int rows, int cols) {
+    int *data = (int *)malloc(rows*cols*sizeof(int));
+    int **array= (int **)malloc(rows*sizeof(int*));
+    for (int i=0; i<rows; i++)
+        array[i] = &(data[cols*i]);
+
+    return array;
+}
+
 int compare_numbers(const void* x, const void* y){
 	return (*(int*)x - *(int*)y);
 }
@@ -19,8 +28,8 @@ int compare_numbers(const void* x, const void* y){
 void master(int id, int process_count, int array_size, int bag_size)
 {
 	cout << "Master: Process started.\n";
-	int** input = new int*[bag_size];
-	int** output = new int*[bag_size];
+	int** input = alloc_2d_int(int bagsize, int array_size);
+	int** output = alloc_2d_int(int bagsize, int array_size);
 	int sent = 0;
 	int processed =  0;
 	MPI_Status status;
@@ -28,7 +37,6 @@ void master(int id, int process_count, int array_size, int bag_size)
 	//Create worst case bubble sort:
 	for (int i = 0; i < bag_size; i++) 
 	{
-		input[i] = new int[array_size];
 		for (int j = 0; j < array_size; j++)
 		{
 			input[i][j] = array_size - j;
@@ -42,7 +50,7 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			MPI_Bsend(input + sent, array_size * 1000, MPI_INT, i, sent, MPI_COMM_WORLD);
+			MPI_Send(input + sent, array_size * 1000, MPI_INT, i, sent, MPI_COMM_WORLD);
 			sent = sent + 1000;
 		}
 	}
@@ -74,15 +82,12 @@ void master(int id, int process_count, int array_size, int bag_size)
 	//All done.
 	double elapsed = MPI_Wtime() - start;
     	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
-
-	cout << "Cleaning up..." << endl;
-	for(int i = 0; i < bag_size; i++)
+    	
+    for(int i = 0; i < bag_size; i++)
 	{
-		delete input[i];
-		delete output[i];
+		for(int j = 0; j < array_size; j++) cout << output[i][j] << " ";
+		cout << endl;	
 	}
-	delete input;
-	delete output;
 }
 
 void slave(int rank, int workers, int array_size)
@@ -118,7 +123,7 @@ void slave(int rank, int workers, int array_size)
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
-			int** result = new int[1000][array_size];
+			int** result = alloc_2d_int(int 1000, int array_size);
 			MPI_Recv(result, array_size*1000, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 			if(!timed)
 			{
