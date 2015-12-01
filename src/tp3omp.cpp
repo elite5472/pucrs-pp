@@ -94,7 +94,7 @@ void slave(int rank, int workers, int array_size)
 	vector<int>out_ids;
 	int receiver = -1;
 	bool distributed = false;
-	double start = MPI_Wtime();
+	double start = 0;
 	
 	#pragma omp parallel num_threads(workers)
 	{
@@ -128,6 +128,7 @@ void slave(int rank, int workers, int array_size)
 				}
 				else
 				{
+					start = MPI_Wtime();
 					arrays.push_back(result);
 					ids.push_back(status.MPI_TAG);
 				}
