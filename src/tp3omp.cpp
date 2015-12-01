@@ -204,7 +204,7 @@ void slave(int rank, int workers, int array_size)
 		}
 		
 		//Sent the chunk of sorted arrays to master.
-		MPI_Send(&(output[0][0]), array_size*chunk_size, MPI_INT, 0, chunk.at(i), MPI_COMM_WORLD);
+		MPI_Send(&(output[0][0]), array_size*chunk_size, MPI_INT, 0, chunks.at(i), MPI_COMM_WORLD);
 	}
 }
 
