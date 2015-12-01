@@ -12,22 +12,8 @@ using namespace std;
 const bool debug = true;
 const int DONE_CALL = 100000000;
 
-void bs(int n, int * vetor)
-{
-    int c =0, d, troca, trocou =1;
-    while (c < (n-1) & trocou )
-        {
-        trocou = 0;
-        for (d = 0 ; d < n - c - 1; d++)
-            if (vetor[d] > vetor[d+1])
-                {
-                troca      = vetor[d];
-                vetor[d]   = vetor[d+1];
-                vetor[d+1] = troca;
-                trocou = 1;
-                }
-        c++;
-        }
+int compare_numbers(const void* x, const void* y){
+	return (*(int*)x - *(int*)y);
 }
 
 void master(int id, int process_count, int array_size, int bag_size)
@@ -171,7 +157,7 @@ void slave(int rank, int workers, int array_size)
 			}
 			if(work_item_id != -1)
 			{
-				bs(array_size, work_item);
+				qsort(work_item, array_size, 4, compare_numbers);
 				#pragma omp critical(put_item)
 				{
 					out_arrays.push_back(work_item);
