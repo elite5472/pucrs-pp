@@ -123,10 +123,10 @@ void slave(int rank, int workers, int array_size)
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
-			cout << "there" << endl;
 			int** result = alloc_2d_int(1000, array_size);
 			cout << "here" << endl;
 			MPI_Recv(result, array_size*1000, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			cout << "there" << endl;
 			if(!timed)
 			{
 				timed = true;
