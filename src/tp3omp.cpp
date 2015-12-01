@@ -10,7 +10,17 @@
 using namespace std;
 
 const bool debug = true;
+const int chunk_size = 100;
 const int DONE_CALL = 100000000;
+
+int **alloc_2d_int(int rows, int cols) {
+    int *data = (int *)malloc(rows*cols*sizeof(int));
+    int **array= (int **)malloc(rows*sizeof(int*));
+    for (int i=0; i<rows; i++)
+        array[i] = &(data[cols*i]);
+
+    return array;
+}
 
 int compare_numbers(const void* x, const void* y){
 	return (*(int*)x - *(int*)y);
@@ -19,20 +29,16 @@ int compare_numbers(const void* x, const void* y){
 void master(int id, int process_count, int array_size, int bag_size)
 {
 	cout << "Master: Process started.\n";
-	int** input = new int*[bag_size];
-	int** output = new int*[bag_size];
+	int** input = alloc_2d_int(bag_size, array_size);
+	int** output = alloc_2d_int(bag_size, array_size);
 	int sent = 0;
 	int processed =  0;
 	MPI_Status status;
 
 	//Create worst case bubble sort:
-	for (int i = 0; i < bag_size; i++) 
+	for (int i = 0; i < bag_size; i++) for (int j = 0; j < array_size; j++)
 	{
-		input[i] = new int[array_size];
-		for (int j = 0; j < array_size; j++)
-		{
-			input[i][j] = array_size - j;
-		}
+		input[i][j] = array_size - j;
 	}
 
 	//Start the clock
@@ -42,9 +48,8 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
-			//Send the array with its identifier id as tag.
-			MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
-			sent++;
+			MPI_Send(&(input[0][0]) + sent, array_size * chunk_size, MPI_INT, i, sent, MPI_COMM_WORLD);
+			sent = sent + chunk_size;
 		}
 	}
 	for(int i = 0; i < process_count; i++) if (i != id)
@@ -57,16 +62,15 @@ void master(int id, int process_count, int array_size, int bag_size)
 
 	while(processed < bag_size)
 	{
-		int result[array_size];
+		int** result = alloc_2d_int(chunk_size, array_size);
 		//Get processed jobs from slaves.
-		MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+		MPI_Recv(&(result[0][0]), array_size*chunk_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		if(status.MPI_TAG >= 0 && status.MPI_TAG < bag_size)
 		{
-			output[status.MPI_TAG] = new int[array_size];
-			processed++;
-			for(int i = 0; i < array_size; i++)
+			processed =  processed + chunk_size;
+			for(int i = 0; i < chunk_size; i++) for(int j = 0; j < array_size; j++)
 			{
-				output[status.MPI_TAG][i] = result[i];
+				output[i + status.MPI_TAG][j] = result[i][j];
 			}
 		}
 	}
@@ -75,21 +79,13 @@ void master(int id, int process_count, int array_size, int bag_size)
 	//All done.
 	double elapsed = MPI_Wtime() - start;
     	cout << "Elapsed: " << setprecision(4) << elapsed << endl;
-
-	cout << "Cleaning up..." << endl;
-	for(int i = 0; i < bag_size; i++)
-	{
-		delete input[i];
-		delete output[i];
-	}
-	delete input;
-	delete output;
 }
 
 void slave(int rank, int workers, int array_size)
 {
 	vector<int*>arrays;
 	vector<int>ids;
+	vector<int>chunks;
 	vector<int*>out_arrays;
 	vector<int>out_ids;
 	int receiver = -1;
@@ -114,11 +110,17 @@ void slave(int rank, int workers, int array_size)
 
 		//Receiver thread will fetch all jobs while other threads work on them.		
 		done = false;
+		bool timed = false;
 		if(this_thread == receiver) while(!done)
 		{
 			MPI_Status status;
-			int* result = new int[array_size];
-			MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			int** result = alloc_2d_int(chunk_size, array_size);
+			MPI_Recv(&(result[0][0]), array_size*chunk_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			if(!timed)
+			{
+				timed = true;
+				start = MPI_Wtime();
+			}
 			#pragma omp critical(grab_item)
 			{
 				if(status.MPI_TAG == DONE_CALL)
@@ -128,12 +130,17 @@ void slave(int rank, int workers, int array_size)
 				}
 				else
 				{
-					start = MPI_Wtime();
-					arrays.push_back(result);
-					ids.push_back(status.MPI_TAG);
+					//Save al the arrays in a queue for workers to grab from one by one, keeping
+					//index information to rebuild the sorted bidimensional array as the output.]
+					chunks.push_back(status.MPI_TAG);
+					for(int i = 0; i < chunk_size; i++)
+					{
+						arrays.push_back(result[i]);
+						ids.push_back(status.MPI_TAG + i);
+					}
 				}
 			}
-		}	//Once the done call is sent, receiver becomes a worker.
+		}	//Once all the cunks of data are processed, receiver becomes a worker.
 
 		done = false;
 		int* work_item;
@@ -171,10 +178,26 @@ void slave(int rank, int workers, int array_size)
 	
 	double elapsed = MPI_Wtime() - start;
 	cout << "Slave Elapsed: " << setprecision(4) << elapsed << endl;
-	
-	for(int i = 0; i < out_arrays.size(); i++)
+
+	//Prepare the output bidimensional array. Each chunk is an MPI sent call.
+	for(int i = 0; i < chunks.size(); i++)
 	{
-		MPI_Send(out_arrays.at(i), array_size, MPI_INT, 0, out_ids.at(i), MPI_COMM_WORLD);
+		int** output = alloc_2d_int(chunk_size, array_size);
+		//Search for the sorted arrays that are part of this chunk.
+		for(int j = 0; j < out_arrays.size(); j++)
+		{
+			int rel_position = out_ids.at(j) - chunks.at(i);
+			if (rel_position >= 0 && rel_position < chunk_size)
+			{
+				//Copy the array into the prepared memory structure.
+				for(int k = 0; k < array_size; k++)
+				{
+					output[rel_position][k] = out_arrays.at(j)[k];
+				}
+			}
+		}
+		//Sent the chunk of sorted arrays to master.
+		MPI_Send(&(output[0][0]), array_size*chunk_size, MPI_INT, 0, chunks.at(i), MPI_COMM_WORLD);
 	}
 }
 
