@@ -62,16 +62,15 @@ void master(int id, int process_count, int array_size, int bag_size)
 
 	while(processed < bag_size)
 	{
-		int result[array_size];
+		int** result = alloc_2d_int(chunk_size, array_size);
 		//Get processed jobs from slaves.
-		MPI_Recv(result, array_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+		MPI_Recv(&(result[0][0]), array_size*chunk_size, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		if(status.MPI_TAG >= 0 && status.MPI_TAG < bag_size)
 		{
-			output[status.MPI_TAG] = new int[array_size];
 			processed++;
-			for(int i = 0; i < array_size; i++)
+			for(int i = 0; i < chunk_size; i++) for(int j = 0; j < array_size; j++)
 			{
-				output[status.MPI_TAG][i] = result[i];
+				output[i + status.MPI_TAG][j] = result[i][j];
 			}
 		}
 	}
@@ -137,6 +136,8 @@ void slave(int rank, int workers, int array_size)
 				}
 				else
 				{
+					//Save al the arrays in a queue for workers to grab from one by one, keeping
+					//index information to rebuild the sorted bidimensional array as the output.
 					for(int i = 0; i < chunk_size; i++)
 					{
 						arrays.push_back(result[i]);
@@ -145,7 +146,7 @@ void slave(int rank, int workers, int array_size)
 					}
 				}
 			}
-		}	//Once the done call is sent, receiver becomes a worker.
+		}	//Once all the cunks of data are processed, receiver becomes a worker.
 
 		done = false;
 		int* work_item;
@@ -183,12 +184,27 @@ void slave(int rank, int workers, int array_size)
 	
 	double elapsed = MPI_Wtime() - start;
 	cout << "Slave Elapsed: " << setprecision(4) << elapsed << endl;
-	
-	//puta
-	
-	for(int i = 0; i < out_arrays.size(); i++)
+
+	//Prepare the output bidimensional array. Each chunk is an MPI sent call.
+	for(int i = 0; i < chunks; i++)
 	{
-		MPI_Send(out_arrays.at(i), array_size, MPI_INT, 0, out_ids.at(i), MPI_COMM_WORLD);
+		int** output = alloc_2d_int(chunk_size, array_size);
+		//Search for the sorted arrays that are part of this chunk.
+		for(j = 0; j < out_arrays.size(); j++)
+		{
+			int rel_position = out_ids.at(j) - chunks.at(i)
+			if (rel_position > 0 && rel_position < 1000)
+			{
+				//Copy the array into the prepared memory structure.
+				for(k = 0; k < array_size; k++)
+				{
+					output[rel_position][k] = out_arrays.at(j)[k];
+				}
+			}
+		}
+		
+		//Sent the chunk of sorted arrays to master.
+		MPI_Send(&(output[0][0]), array_size*chunk_size, MPI_INT, 0, chunk.at(i), MPI_COMM_WORLD);
 	}
 }
 
