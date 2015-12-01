@@ -56,6 +56,7 @@ void master(int id, int process_count, int array_size, int bag_size)
 	{
 		for(int i = 0; i < process_count; i++) if (i != id && sent < bag_size)
 		{
+			cout << "Master: senting " << sent << " to " << i << endl;
 			//Send the array with its identifier id as tag.
 			MPI_Send(input[sent], array_size, MPI_INT, i, sent, MPI_COMM_WORLD);
 			sent++;
